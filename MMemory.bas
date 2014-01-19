@@ -35,23 +35,12 @@ Attribute VB_Name = "MMemory"
 '           ¦          ¦     ¦
 '           ¦          ¦     ¦
 '           ¦          ¦     ¦
-Option Compare Database
 Option Explicit
 
 Public Const klSizeOfLong      As Long = 4&
 Public Const klSizeOfInt       As Long = 2&
 Public Const klSizeOfBool      As Long = 2&
 Public Const klSizeOfByte      As Long = 1&
-
-#If Win64 Then
-Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As LongPtr)
-Private Declare PtrSafe Sub CopyMemoryToString Lib "kernel32" Alias "RtlMoveMemory" (ByVal lpstrDest As String, Source As Any, ByVal Length As LongPtr)
-Private Declare PtrSafe Sub CopyMemoryFromString Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, ByVal lpstrSource As String, ByVal Length As LongPtr)
-#Else
-Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (lpvDest As Any, lpvSource As Any, ByVal cbCopy As Long)
-Public Declare Sub CopyMemoryToString Lib "kernel32" Alias "RtlMoveMemory" (ByVal lpstrDest As String, lpvSource As Any, ByVal cbCopy As Long)
-Public Declare Sub CopyMemoryFromString Lib "kernel32" Alias "RtlMoveMemory" (lpvDest As Any, ByVal lpstrSource As String, ByVal cbCopy As Long)
-#End If
 
 'Peek a variant value from a byte array and advance
 
@@ -399,3 +388,4 @@ Public Sub GetVarArrayBounds(ByRef pvVar As Variant, ByRef piRetDims As Integer,
   End If
   pavRetBounds = Array(lLB1, lUB1, lLB2, lUB2)
 End Sub
+

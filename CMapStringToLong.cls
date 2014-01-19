@@ -4,9 +4,9 @@ BEGIN
 END
 Attribute VB_Name = "CMapStringToLong"
 Attribute VB_GlobalNameSpace = False
-Attribute VB_Creatable = False
+Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
-Attribute VB_Exposed = False
+Attribute VB_Exposed = True
 '(C) 2007-2014, Developpement Informatique Service, Francesco Foti
 '          internet: http://www.devinfo.net
 '          email:    info@devinfo.ch
@@ -77,12 +77,8 @@ Private mlMapCount          As Long     'Number of elements in the string array
 'For iObjectBytes interface
 Private Const ksClassVersion As String = "01.00.00"
 
-#If Win64 Then
-Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As LongPtr)
-#Else
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" ( _
               lpvDest As Any, lpvSource As Any, ByVal cbCopy As Long)
-#End If
 
 Private Sub Class_Initialize()
   Dim tCalcSize   As TMapItem
@@ -607,33 +603,33 @@ Private Property Get IObjectBytes_ByteSize() As Long
 End Property
 
 Private Function GetInstanceByteSize() As Long
-  Dim lSize       As Long
+  Dim lsize       As Long
   Dim i           As Long
   
   'We store class id and class version (long + long)
-  lSize = 2 * klSizeOfLong
+  lsize = 2 * klSizeOfLong
   
   'mlGrowSize, mfSorted, mfCaseSensitive, miCompareMethod
-  lSize = lSize + klSizeOfLong + klSizeOfBool + klSizeOfBool + klSizeOfInt 'behaviour
+  lsize = lsize + klSizeOfLong + klSizeOfBool + klSizeOfBool + klSizeOfInt 'behaviour
   'string array
-  lSize = lSize + 2& * klSizeOfLong 'mlStrArraySize, mlStrArraySlotCount
+  lsize = lsize + 2& * klSizeOfLong 'mlStrArraySize, mlStrArraySlotCount
   If mlStrArraySlotCount Then
     For i = 1& To mlStrArraySlotCount
-      lSize = lSize + klSizeOfLong  'string length
-      lSize = lSize + Len(masString(i))
+      lsize = lsize + klSizeOfLong  'string length
+      lsize = lsize + Len(masString(i))
     Next i
   End If
   'garbage queue
-  lSize = lSize + 4& * klSizeOfLong 'mlGarbQCount, mlGarbQSize, mlGarbQHead, mlGarbQTail
+  lsize = lsize + 4& * klSizeOfLong 'mlGarbQCount, mlGarbQSize, mlGarbQHead, mlGarbQTail
   If mlGarbQCount Then
-    lSize = lSize + mlGarbQCount * klSizeOfLong
+    lsize = lsize + mlGarbQCount * klSizeOfLong
   End If
   'map array
-  lSize = lSize + 2& * klSizeOfLong  'mlMapCount, mlMapArraySize
+  lsize = lsize + 2& * klSizeOfLong  'mlMapCount, mlMapArraySize
   If mlMapCount Then
-    lSize = lSize + mlMapCount * klSizeOfLong * 2& 'elements in matMap() are long+long
+    lsize = lsize + mlMapCount * klSizeOfLong * 2& 'elements in matMap() are long+long
   End If
-  GetInstanceByteSize = lSize
+  GetInstanceByteSize = lsize
 End Function
 
 'Easily expose implemented IObjectBytes interface
@@ -712,10 +708,10 @@ Private Sub IObjectBytes_SetDataBytes(abObjectData() As Byte, Optional ByRef plB
   lClassID = PeekLong(abObjectData, plByte)
   lClassVer = PeekLong(abObjectData, plByte)
   If lClassID <> klCIDMapStringToLong Then
-    Err.Raise MAKE_OBJECTERROR(kErrBadClassIDBytes, 5000&), "CMapStringToLong", "CMapStringToLong data bytes class ID doesn't match"
+    Err.Raise MAKE_OBJECTERROR(kErrBadClassIDBytes), "CMapStringToLong", "CMapStringToLong data bytes class ID doesn't match"
   End If
   If lClassVer <> MAKE_VERSIONLONG(ksClassVersion) Then
-    Err.Raise MAKE_OBJECTERROR(kErrBadClassVerBytes, 5000&), "CMapStringToLong", "CMapStringToLong data bytes version doesn't match"
+    Err.Raise MAKE_OBJECTERROR(kErrBadClassVerBytes), "CMapStringToLong", "CMapStringToLong data bytes version doesn't match"
   End If
   
   'behaviour members
@@ -757,4 +753,6 @@ Private Sub IObjectBytes_SetDataBytes(abObjectData() As Byte, Optional ByRef plB
     Next i
   End If
 End Sub
+
+
 

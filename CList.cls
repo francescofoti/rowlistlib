@@ -4,15 +4,16 @@ BEGIN
 END
 Attribute VB_Name = "CList"
 Attribute VB_GlobalNameSpace = False
-Attribute VB_Creatable = False
+Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 '(C) 2007-2014, Developpement Informatique Service, Francesco Foti
 '          internet: http://www.devinfo.net
 '          email:    info@devinfo.ch
 '
-'CMapStringToLong.bas class module
-'This class associates strings (keys) with long integer (32bits) values.
+'CList.bas class module
+'This the CList class, that handle two dimensional indexed arrays which
+'can be searched and sorted on multiple colums.
 '
 'This file is part of the DISRowList library for Visual Basic, DISRowList hereafter.
 '
@@ -124,12 +125,8 @@ Private Const klColFlagSortedCaseInsensitive   As Long = &H20000
 'For iObjectBytes interface
 Private Const ksClassVersion As String = "01.10.00"
 
-#If Win64 Then
-Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As LongPtr)
-#Else
 Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" ( _
               lpvDest As Any, lpvSource As Any, ByVal cbCopy As Long)
-#End If
 
 '
 ' Constructor / destructor
@@ -1715,48 +1712,48 @@ Private Property Get IObjectBytes_ByteSize() As Long
 End Property
 
 Private Function GetInstanceByteSize() As Long
-  Dim lSize       As Long
+  Dim lsize       As Long
   Dim i           As Long
   
   'We store class id and class version (long + long)
-  lSize = 2& * klSizeOfLong
+  lsize = 2& * klSizeOfLong
   
   'mlGrowSize
-  lSize = lSize + klSizeOfLong
+  lsize = lsize + klSizeOfLong
   'Behaviour
-  lSize = lSize + klSizeOfBool  'mfSorted
-  lSize = lSize + klSizeOfLong + Len(msSortColumns) 'msSortColumns
+  lsize = lsize + klSizeOfBool  'mfSorted
+  lsize = lsize + klSizeOfLong + Len(msSortColumns) 'msSortColumns
   
   'DataArray
   'mlDataArraySize, mlDataArraySlotCount
-  lSize = lSize + 2& * klSizeOfLong
-  lSize = lSize + CalcByteSize(DataArray)
+  lsize = lsize + 2& * klSizeOfLong
+  lsize = lsize + CalcByteSize(DataArray)
   
   'Row handles
   'mlIdxArraySize, mlIdxCount,mlCurRow
-  lSize = lSize + 2& * klSizeOfLong
-  lSize = lSize + mlIdxCount * klSizeOfLong
-  lSize = lSize + klSizeOfLong
+  lsize = lsize + 2& * klSizeOfLong
+  lsize = lsize + mlIdxCount * klSizeOfLong
+  lsize = lsize + klSizeOfLong
   
   'Column definitions
-  lSize = lSize + klSizeOfLong              'mlColCount
-  lSize = lSize + mlColCount * klSizeOfLong 'all the malColIndex() array elements
+  lsize = lsize + klSizeOfLong              'mlColCount
+  lsize = lsize + mlColCount * klSizeOfLong 'all the malColIndex() array elements
   'All the TColDef items of matColDef, member by member
-  lSize = lSize + mlColCount * klSizeOfInt  'iDataType
-  lSize = lSize + mlColCount * klSizeOfLong 'lDataSize
-  lSize = lSize + mlColCount * klSizeOfLong 'lFlags
+  lsize = lsize + mlColCount * klSizeOfInt  'iDataType
+  lsize = lsize + mlColCount * klSizeOfLong 'lDataSize
+  lsize = lsize + mlColCount * klSizeOfLong 'lFlags
   For i = 1 To mlColCount
-    lSize = lSize + klSizeOfLong + Len(matColDef(i).sColName)
+    lsize = lsize + klSizeOfLong + Len(matColDef(i).sColName)
   Next i
-  lSize = lSize + moColIndexMap.IIObjectBytes.ByteSize()
+  lsize = lsize + moColIndexMap.IIObjectBytes.ByteSize()
   
   'Finally, the garbage queue
-  lSize = lSize + 4& * klSizeOfLong 'mlGarbQCount, mlGarbQSize, mlGarbQHead, mlGarbQTail
+  lsize = lsize + 4& * klSizeOfLong 'mlGarbQCount, mlGarbQSize, mlGarbQHead, mlGarbQTail
   If mlGarbQCount Then
-    lSize = lSize + mlGarbQCount * klSizeOfLong
+    lsize = lsize + mlGarbQCount * klSizeOfLong
   End If
   
-  GetInstanceByteSize = lSize
+  GetInstanceByteSize = lsize
 End Function
 
 'Easily expose implemented IObjectBytes interface
@@ -1853,10 +1850,10 @@ Private Sub IObjectBytes_SetDataBytes(abObjectData() As Byte, Optional ByRef plB
   lClassID = PeekLong(abObjectData(), plByte)
   lClassVer = PeekLong(abObjectData, plByte)
   If lClassID <> klCIDList Then
-    Err.Raise MAKE_OBJECTERROR(kErrBadClassIDBytes, 5000&), "CList", "CList data bytes class ID doesn't match"
+    Err.Raise MAKE_OBJECTERROR(kErrBadClassIDBytes), "CList", "CList data bytes class ID doesn't match"
   End If
   If lClassVer <> MAKE_VERSIONLONG(ksClassVersion) Then
-    Err.Raise MAKE_OBJECTERROR(kErrBadClassVerBytes, 5000&), "CList", "CList data bytes version doesn't match"
+    Err.Raise MAKE_OBJECTERROR(kErrBadClassVerBytes), "CList", "CList data bytes version doesn't match"
   End If
   
   'behaviour members
@@ -1916,4 +1913,5 @@ Private Sub IObjectBytes_SetDataBytes(abObjectData() As Byte, Optional ByRef plB
     Next i
   End If
 End Sub
+
 

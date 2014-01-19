@@ -1,19 +1,11 @@
-VERSION 1.0 CLASS
-BEGIN
-  MultiUse = -1  'True
-END
-Attribute VB_Name = "IObjectBytes"
-Attribute VB_GlobalNameSpace = False
-Attribute VB_Creatable = False
-Attribute VB_PredeclaredId = False
-Attribute VB_Exposed = True
+Attribute VB_Name = "MFunctions"
 '(C) 2007-2014, Developpement Informatique Service, Francesco Foti
 '          internet: http://www.devinfo.net
 '          email:    info@devinfo.ch
 '
-'IObjectBytes.bas class interface definition module
-'This interface manages object serialization as a stream of bytes;
-'and as we are in VB, the stream of byte is actually an array.
+'MFunctions.bas module
+'This module contains general purpose functions, constants and vairable
+'available for internal use by the library.
 '
 'This file is part of the DISRowList library for Visual Basic, DISRowList hereafter.
 '
@@ -39,16 +31,31 @@ Attribute VB_Exposed = True
 'When       ¦ Version  ¦ Who ¦ What
 '-----------+----------+-----+-----------------------------------------------------
 '           ¦          ¦     ¦
+Option Compare Database
 Option Explicit
 
-Public Property Get ByteSize() As Long
+' 5001 - 5010: Shared between object implementing IObjectBytes
+Public Const kErrBadClassIDBytes      As Long = 5001& '%1%=class name
+Public Const kErrBadClassVerBytes     As Long = 5002& '%1%=class name
 
-End Property
+Public Const klObjectErrBase          As Long = 6000&   'Which leaves us from 6000& to 29000& for our errors
 
-Public Sub GetDataBytes(ByRef abRetObject() As Byte)
+'A version string has 3 parts : XX.YY.ZZ
+' XX: major
+' YY: minor
+' ZZ: revision
+Public Function MAKE_VERSIONLONG(ByVal psVersion As String) As Long
+  MAKE_VERSIONLONG = CLng("1" & LPad$(Replace(psVersion, ".", ""), "0", 6))
+End Function
 
-End Sub
+'Call in VB error trapping routines
+Public Function MAKE_VBERROR(ByVal plErrCode As Long) As Long
+  MAKE_VBERROR = vbObjectError Or (plErrCode And &HFFFF&)
+End Function
 
-Public Sub SetDataBytes(ByRef abObjectData() As Byte, Optional ByRef plByte As Long = 1&)
+'Call when setting a custom object err code
+Public Function MAKE_OBJECTERROR(ByVal plErrCode As Long, ByVal plModuleErrBase As Long) As Long
+  MAKE_OBJECTERROR = vbObjectError Or (plErrCode + klObjectErrBase + plModuleErrBase)
+End Function
 
-End Sub
+

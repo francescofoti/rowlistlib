@@ -4,7 +4,7 @@ BEGIN
 END
 Attribute VB_Name = "CRow"
 Attribute VB_GlobalNameSpace = False
-Attribute VB_Creatable = False
+Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 '(C) 2007-2014, Developpement Informatique Service, Francesco Foti
@@ -63,11 +63,8 @@ Private moColIndexMap     As CMapStringToLong 'Store colname-->colindex map
 'For iObjectBytes interface
 Private Const ksClassVersion As String = "01.00.00"
 
-#If Win64 Then
-  Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As LongPtr)
-#Else
-  Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (lpvDest As Any, lpvSource As Any, ByVal cbCopy As Long)
-#End If
+Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" ( _
+              lpvDest As Any, lpvSource As Any, ByVal cbCopy As Long)
 
 Private Sub Class_Initialize()
   Set moColIndexMap = New CMapStringToLong
@@ -625,31 +622,31 @@ Private Property Get IObjectBytes_ByteSize() As Long
 End Property
 
 Private Function GetInstanceByteSize() As Long
-  Dim lSize       As Long
+  Dim lsize       As Long
   Dim i           As Long
   
   'We store class id and class version (long + long)
-  lSize = 2& * klSizeOfLong
+  lsize = 2& * klSizeOfLong
   
   'Behaviour
-  lSize = lSize + klSizeOfBool  'mfDirty
-  lSize = lSize + klSizeOfLong  'mlColCount
+  lsize = lsize + klSizeOfBool  'mfDirty
+  lsize = lsize + klSizeOfLong  'mlColCount
   
   'Column indices (malColIndex())
-  lSize = lSize + mlColCount * klSizeOfLong 'malColIndex items
+  lsize = lsize + mlColCount * klSizeOfLong 'malColIndex items
   'Column items (TColDef items in matColDef())
   For i = 1 To mlColCount
     With matColDef(i)
-      lSize = lSize + CalcByteSize(.vValue)
-      lSize = lSize + klSizeOfInt   '.iDataType
-      lSize = lSize + klSizeOfLong  '.lDataSize
-      lSize = lSize + klSizeOfLong  '.lFlags
-      lSize = lSize + klSizeOfLong + Len(.sColName) '.sColName
+      lsize = lsize + CalcByteSize(.vValue)
+      lsize = lsize + klSizeOfInt   '.iDataType
+      lsize = lsize + klSizeOfLong  '.lDataSize
+      lsize = lsize + klSizeOfLong  '.lFlags
+      lsize = lsize + klSizeOfLong + Len(.sColName) '.sColName
     End With
   Next i
-  lSize = lSize + moColIndexMap.IIObjectBytes.ByteSize()
+  lsize = lsize + moColIndexMap.IIObjectBytes.ByteSize()
   
-  GetInstanceByteSize = lSize
+  GetInstanceByteSize = lsize
 End Function
 
 'Easily expose implemented IObjectBytes interface
@@ -716,10 +713,10 @@ Private Sub IObjectBytes_SetDataBytes(abObjectData() As Byte, Optional plByte As
   lClassID = PeekLong(abObjectData(), plByte)
   lClassVer = PeekLong(abObjectData, plByte)
   If lClassID <> klCIDRow Then
-    Err.Raise MAKE_OBJECTERROR(kErrBadClassIDBytes, 5000&), "CRow", "CRow data bytes class ID doesn't match"
+    Err.Raise MAKE_OBJECTERROR(kErrBadClassIDBytes), "CRow", "CRow data bytes class ID doesn't match"
   End If
   If lClassVer <> MAKE_VERSIONLONG(ksClassVersion) Then
-    Err.Raise MAKE_OBJECTERROR(kErrBadClassVerBytes, 5000&), "CRow", "CRow data bytes version doesn't match"
+    Err.Raise MAKE_OBJECTERROR(kErrBadClassVerBytes), "CRow", "CRow data bytes version doesn't match"
   End If
   
   'behaviour members
@@ -742,4 +739,5 @@ Private Sub IObjectBytes_SetDataBytes(abObjectData() As Byte, Optional plByte As
   
   moColIndexMap.IIObjectBytes.SetDataBytes abObjectData, plByte
 End Sub
+
 

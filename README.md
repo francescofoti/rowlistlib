@@ -1,3 +1,9 @@
+# Archived
+
+This project is now archived and superseeded by the [rowlistlib2](https://gihub.com/francescofoti/rowlistlib2) project.
+
+# Readme snapshot
+
 rowlistlib
 ==========
 
